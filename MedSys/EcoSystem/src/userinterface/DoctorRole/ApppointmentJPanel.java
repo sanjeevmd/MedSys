@@ -1,0 +1,727 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package userinterface.DoctorRole;
+
+import Business.EcoSystem;
+import Business.Employee.Employee;
+import Business.Enterprise.Enterprise;
+import Business.Location.Location;
+import Business.Medications.Medication;
+import Business.Medications.MedicationAdministration;
+import Business.Network.Network;
+import Business.Organization.LabOrganization;
+import Business.Organization.NurseOrganization;
+import Business.Organization.Organization;
+import Business.Patients.Patient;
+import Business.UserAccount.UserAccount;
+import Business.WorkQueue.BloodrequestToBBfromHospital;
+import Business.WorkQueue.DischargeReqtoNurse;
+import Business.WorkQueue.LabTestWorkRequest;
+import Business.WorkQueue.TransferRequest;
+import Business.WorkQueue.WorkRequest;
+import static Logger.Logger.logger;
+import Mail.SendMail;
+import java.awt.CardLayout;
+import java.time.LocalDateTime;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.mail.MessagingException;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.table.DefaultTableModel;
+import userinterface.AdministrativeRole.CreatePatientJPanel;
+
+/**
+ *
+ * @author Sanjeev MD
+ */
+public class ApppointmentJPanel extends javax.swing.JPanel {
+
+    private JPanel userProcessContainer;
+    private Enterprise enterprise;
+    private UserAccount userAccount;
+    private EcoSystem ecosystem;
+
+    /**
+     * Creates new form ApppointmentJPanel
+     */
+    ApppointmentJPanel(JPanel userProcessContainer, Enterprise enterprise, UserAccount userAccount, EcoSystem ecosystem) {
+        logger.log(Level.INFO, "ApppointmentJPanel");
+
+        initComponents();
+        this.userProcessContainer = userProcessContainer;
+        this.enterprise = enterprise;
+        this.userAccount = userAccount;
+        this.ecosystem = ecosystem;
+        populateTable();
+        populateDischargeReq();
+        populatebloodReq();
+        populateComboBox();
+        populateTranReq();
+        populateBB();
+    }
+
+    public void populateBB() {
+        logger.log(Level.INFO, "populateBB --ApppointmentJPanel");
+
+        for (Network net : ecosystem.getNetworkList()) {
+            for (Enterprise enterprise : net.getEnterpriseDirectory().getEnterpriseList()) {
+                if (enterprise.getEnterpriseType() == Enterprise.EnterpriseType.BloodBank) {
+                    bloodBanks.addItem(enterprise.getName());
+                }
+            }
+        }
+    }
+
+    public void populateComboBox() {
+        logger.log(Level.INFO, "populateComboBox --ApppointmentJPanel");
+
+        for (Network net : ecosystem.getNetworkList()) {
+            for (Enterprise enterprise : net.getEnterpriseDirectory().getEnterpriseList()) {
+                if (!enterprise.getName().equals(this.enterprise.getName())
+                        && enterprise.getEnterpriseType() == Enterprise.EnterpriseType.Hospital) {
+                    transferHospital.addItem(enterprise.getName());
+                }
+            }
+        }
+    }
+
+    public void populateTable() {
+        logger.log(Level.INFO, "populateTable --ApppointmentJPanel");
+
+        int flag = 0;
+        DefaultTableModel model = (DefaultTableModel) patientJTable.getModel();
+        model.setRowCount(0);
+        for (Patient patient : enterprise.getPatientDirectory().getPatientList()) {
+            if (patient.getDoctor() != null) {
+                if (patient.getDoctor().getName() == userAccount.getEmployee().getName()) {
+                    if (!patient.isIsDischarged()) {
+                        for (WorkRequest req : userAccount.getWorkQueue().getWorkRequestList()) {
+                            if (req.getClass().getName().contains("DischargeReqtoNurse")) {
+                                if (((DischargeReqtoNurse) req).getPatient().getPatientHRN().equals(patient.getPatientHRN())
+                                        && req.getStatus().equals("0")) {
+                                    flag = 1;
+                                    break;
+                                }
+                            }
+                        }
+                        if (flag == 0) {
+                            Object[] row = new Object[3];
+                            row[0] = patient;
+                            row[1] = patient.getPatientHRN();
+                            row[2] = patient.getLocation().getName();
+                            model.addRow(row);
+                        }
+                        flag = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        btnBack = new javax.swing.JButton();
+        sendToDoctorPanel3 = new javax.swing.JLayeredPane();
+        btnPrescribe = new javax.swing.JButton();
+        btnAllergy = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        patientJTable = new javax.swing.JTable();
+        sendToDoctorPanel7 = new javax.swing.JLayeredPane();
+        jButton2 = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        sendToDoctorPanel6 = new javax.swing.JLayeredPane();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTable2 = new javax.swing.JTable();
+        bloodBanks = new javax.swing.JComboBox<>();
+        jButton1 = new javax.swing.JButton();
+        sendToDoctorPanel5 = new javax.swing.JLayeredPane();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        patientJTable1 = new javax.swing.JTable();
+        jButton3 = new javax.swing.JButton();
+        transferHospital = new javax.swing.JComboBox<>();
+
+        setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        btnBack.setText("Back");
+        btnBack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBackActionPerformed(evt);
+            }
+        });
+        add(btnBack, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 20, -1, -1));
+
+        sendToDoctorPanel3.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        btnPrescribe.setText("Medications");
+        btnPrescribe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrescribeActionPerformed(evt);
+            }
+        });
+
+        btnAllergy.setText("Add Allergy");
+        btnAllergy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAllergyActionPerformed(evt);
+            }
+        });
+
+        patientJTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Patient Name", "Patient HRN", "Location"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(patientJTable);
+        if (patientJTable.getColumnModel().getColumnCount() > 0) {
+            patientJTable.getColumnModel().getColumn(0).setResizable(false);
+            patientJTable.getColumnModel().getColumn(1).setResizable(false);
+            patientJTable.getColumnModel().getColumn(2).setResizable(false);
+        }
+
+        sendToDoctorPanel3.setLayer(btnPrescribe, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        sendToDoctorPanel3.setLayer(btnAllergy, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        sendToDoctorPanel3.setLayer(jScrollPane1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout sendToDoctorPanel3Layout = new javax.swing.GroupLayout(sendToDoctorPanel3);
+        sendToDoctorPanel3.setLayout(sendToDoctorPanel3Layout);
+        sendToDoctorPanel3Layout.setHorizontalGroup(
+            sendToDoctorPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sendToDoctorPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(sendToDoctorPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(sendToDoctorPanel3Layout.createSequentialGroup()
+                        .addComponent(btnPrescribe)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnAllergy)
+                        .addGap(31, 31, 31))
+                    .addGroup(sendToDoctorPanel3Layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(11, Short.MAX_VALUE))))
+        );
+        sendToDoctorPanel3Layout.setVerticalGroup(
+            sendToDoctorPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, sendToDoctorPanel3Layout.createSequentialGroup()
+                .addContainerGap(9, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(sendToDoctorPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnPrescribe)
+                    .addComponent(btnAllergy))
+                .addContainerGap())
+        );
+
+        add(sendToDoctorPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 110, 370, -1));
+
+        sendToDoctorPanel7.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        jButton2.setText("Discharge");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Patient", "Discharge Status"
+            }
+        ));
+        jScrollPane2.setViewportView(jTable1);
+
+        sendToDoctorPanel7.setLayer(jButton2, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        sendToDoctorPanel7.setLayer(jScrollPane2, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout sendToDoctorPanel7Layout = new javax.swing.GroupLayout(sendToDoctorPanel7);
+        sendToDoctorPanel7.setLayout(sendToDoctorPanel7Layout);
+        sendToDoctorPanel7Layout.setHorizontalGroup(
+            sendToDoctorPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sendToDoctorPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(sendToDoctorPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton2))
+                .addContainerGap(11, Short.MAX_VALUE))
+        );
+        sendToDoctorPanel7Layout.setVerticalGroup(
+            sendToDoctorPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sendToDoctorPanel7Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        add(sendToDoctorPanel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 330, 370, -1));
+
+        sendToDoctorPanel6.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Patient", "Blood ", "Units", "Status"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane3.setViewportView(jTable2);
+        if (jTable2.getColumnModel().getColumnCount() > 0) {
+            jTable2.getColumnModel().getColumn(0).setResizable(false);
+            jTable2.getColumnModel().getColumn(1).setResizable(false);
+            jTable2.getColumnModel().getColumn(2).setResizable(false);
+            jTable2.getColumnModel().getColumn(3).setResizable(false);
+        }
+
+        bloodBanks.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select Blood Bank" }));
+
+        jButton1.setText("Request Blood");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        sendToDoctorPanel6.setLayer(jScrollPane3, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        sendToDoctorPanel6.setLayer(bloodBanks, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        sendToDoctorPanel6.setLayer(jButton1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout sendToDoctorPanel6Layout = new javax.swing.GroupLayout(sendToDoctorPanel6);
+        sendToDoctorPanel6.setLayout(sendToDoctorPanel6Layout);
+        sendToDoctorPanel6Layout.setHorizontalGroup(
+            sendToDoctorPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sendToDoctorPanel6Layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addComponent(bloodBanks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(36, 36, 36)
+                .addComponent(jButton1)
+                .addContainerGap(11, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, sendToDoctorPanel6Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        sendToDoctorPanel6Layout.setVerticalGroup(
+            sendToDoctorPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, sendToDoctorPanel6Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(sendToDoctorPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(bloodBanks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23))
+        );
+
+        add(sendToDoctorPanel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 330, 370, 210));
+
+        sendToDoctorPanel5.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        patientJTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Patient Name", "Status"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane4.setViewportView(patientJTable1);
+        if (patientJTable1.getColumnModel().getColumnCount() > 0) {
+            patientJTable1.getColumnModel().getColumn(0).setResizable(false);
+            patientJTable1.getColumnModel().getColumn(1).setResizable(false);
+        }
+
+        jButton3.setText("Transfer");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        transferHospital.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select Hospital" }));
+        transferHospital.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transferHospitalActionPerformed(evt);
+            }
+        });
+
+        sendToDoctorPanel5.setLayer(jScrollPane4, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        sendToDoctorPanel5.setLayer(jButton3, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        sendToDoctorPanel5.setLayer(transferHospital, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout sendToDoctorPanel5Layout = new javax.swing.GroupLayout(sendToDoctorPanel5);
+        sendToDoctorPanel5.setLayout(sendToDoctorPanel5Layout);
+        sendToDoctorPanel5Layout.setHorizontalGroup(
+            sendToDoctorPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sendToDoctorPanel5Layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addGroup(sendToDoctorPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(sendToDoctorPanel5Layout.createSequentialGroup()
+                        .addComponent(transferHospital, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton3))
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        sendToDoctorPanel5Layout.setVerticalGroup(
+            sendToDoctorPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sendToDoctorPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(sendToDoctorPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton3)
+                    .addComponent(transferHospital, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(19, Short.MAX_VALUE))
+        );
+
+        add(sendToDoctorPanel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 110, 370, -1));
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
+        // TODO add your handling code here:
+        logger.log(Level.INFO, "btnBackActionPerformed --ApppointmentJPanel");
+
+        userProcessContainer.remove(this);
+        CardLayout layout = (CardLayout) userProcessContainer.getLayout();
+        layout.previous(userProcessContainer);
+    }//GEN-LAST:event_btnBackActionPerformed
+
+    private void btnPrescribeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrescribeActionPerformed
+        // TODO add your handling code here:
+        logger.log(Level.INFO, "btnPrescribeActionPerformed --ApppointmentJPanel");
+
+        int selectedRow = patientJTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            Patient patient = (Patient) patientJTable.getValueAt(selectedRow, 0);
+            prescribeJPanel prescribeJPanel = new prescribeJPanel(userProcessContainer, patient, enterprise);
+            userProcessContainer.add("prescribeJPanel", prescribeJPanel);
+            CardLayout layout = (CardLayout) userProcessContainer.getLayout();
+            layout.next(userProcessContainer);
+        } else {
+            JOptionPane.showMessageDialog(userProcessContainer, "Please select a patient");
+        }
+    }//GEN-LAST:event_btnPrescribeActionPerformed
+
+    private void btnAllergyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAllergyActionPerformed
+        // TODO add your handling code here:
+        logger.log(Level.INFO, "btnAllergyActionPerformed --ApppointmentJPanel");
+
+        int selectedRow = patientJTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            Patient patient = (Patient) patientJTable.getValueAt(selectedRow, 0);
+            AllergyJPanel allergyJPanel = new AllergyJPanel(userProcessContainer, patient);
+            userProcessContainer.add("allergyJPanel", allergyJPanel);
+            CardLayout layout = (CardLayout) userProcessContainer.getLayout();
+            layout.next(userProcessContainer);
+        } else {
+            JOptionPane.showMessageDialog(userProcessContainer, "Please select a patient");
+        }
+    }//GEN-LAST:event_btnAllergyActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        logger.log(Level.INFO, "jButton2ActionPerformed --ApppointmentJPanel");
+
+        int selectedRow = patientJTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            Patient patient = (Patient) patientJTable.getValueAt(selectedRow, 0);
+            for (Medication med : patient.getMedList().getMedicationList()) {
+                if (!med.isIsdiscontinue()) {
+                    for (MedicationAdministration medAdmin : med.getMedAdmin()) {
+                        if (!medAdmin.getIsAdministered()) {
+                            JOptionPane.showMessageDialog(userProcessContainer, "Patient has medications which has not been administered."
+                                    + "Please Administer before discharge");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            //for (WorkRequest req : userAccount.getWorkQueue().getWorkRequestList()) {
+            //    if (req.getClass().getName().contains("DischargeReqtoNurse")) {
+            //        if (((DischargeReqtoNurse) req).getPatient().getPatientHRN().equals(patient.getPatientHRN())) {
+            //            JOptionPane.showMessageDialog(userProcessContainer, "Request has already been raised.");
+            //            return;
+            //        }
+            //    }
+            //}
+
+            DischargeReqtoNurse request = new DischargeReqtoNurse(patient);
+            request.setStatus("0");
+            Organization org = null;
+            for (Organization organization : enterprise.getOrganizationDirectory().getOrganizationList()) {
+                if (organization instanceof NurseOrganization) {
+                    org = organization;
+                    break;
+                }
+            }
+            if (org != null) {
+                org.getWorkQueue().getWorkRequestList().add(request);
+                userAccount.getWorkQueue().getWorkRequestList().add(request);
+            }
+            JOptionPane.showMessageDialog(userProcessContainer, "patient Discharge Requested to Nurse");
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        SendMail.sendMail(enterprise.getMailID(), "Hi, Patient Discharge Alert Requested to Nurse \n\n"
+                                + "Patient Name : " + patient.getPatientName() + "\nPatient HRN : "
+                                + patient.getPatientHRN()
+                                + "\nBlood Group : " + patient.getBloodGroup()
+                                + "\nLocation : " + patient.getLocation().getName()
+                                + "\nDoctor : " + patient.getDoctor().getName(),
+                                patient.getPatientHRN());
+                    } catch (MessagingException ex) {
+                        Logger.getLogger(CreatePatientJPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }).start();
+
+            populateTable();
+            populateDischargeReq();
+            return;
+        }
+
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        logger.log(Level.INFO, "jButton1ActionPerformed --ApppointmentJPanel");
+
+        if (bloodBanks.getSelectedIndex() == 0) {
+            JOptionPane.showMessageDialog(userProcessContainer, "Please select the BloodBank you like to request the blood");
+            return;
+        }
+
+        int selectedRow = patientJTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            Patient patient = (Patient) patientJTable.getValueAt(selectedRow, 0);
+            for (Network network : ecosystem.getNetworkList()) {
+                for (Enterprise enterprise : network.getEnterpriseDirectory().getEnterpriseList()) {
+                    if (enterprise.getEnterpriseType() == Enterprise.EnterpriseType.BloodBank
+                            && enterprise.getName().equals(bloodBanks.getSelectedItem())) {
+                        BloodrequestToBBfromHospital reqtoBB = new BloodrequestToBBfromHospital();
+                        try {
+                            int reqUnits = Integer.parseInt(JOptionPane.showInputDialog(userProcessContainer, "Req Units"));
+                            if (reqUnits >= 5 || reqUnits <= 0) {
+                                JOptionPane.showMessageDialog(userProcessContainer, "Please enter a valid unit");
+                                return;
+                            } else {
+                                reqtoBB.setReqUnits(reqUnits);
+                            }
+                            reqtoBB.setStatus("0");
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(userProcessContainer, "Please enter a valid integer");
+                            return;
+                        }
+                        reqtoBB.setPatient(patient);
+                        reqtoBB.setSenderEnterprise(this.enterprise);
+                        enterprise.getWorkQueue().getWorkRequestList().add(reqtoBB);
+                        userAccount.getWorkQueue().getWorkRequestList().add(reqtoBB);
+                        populatebloodReq();
+                        return;
+                    }
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(userProcessContainer, "Please select a patient");
+        }
+
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+        logger.log(Level.INFO, "jButton3ActionPerformed --ApppointmentJPanel");
+
+        if (transferHospital.getSelectedIndex() == 0) {
+            JOptionPane.showMessageDialog(userProcessContainer, "Please select the hospital you like to transfer the patient");
+            return;
+        }
+
+        int selectedRow = patientJTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            Patient patient = (Patient) patientJTable.getValueAt(selectedRow, 0);
+            for (Network network : ecosystem.getNetworkList()) {
+                for (Enterprise enterprise : network.getEnterpriseDirectory().getEnterpriseList()) {
+                    if (enterprise.getEnterpriseType() == Enterprise.EnterpriseType.EmergencyCare) {
+                        TransferRequest transfer = new TransferRequest();
+                        Patient tranpatient = new Patient();
+                        tranpatient.setAllergies(patient.getAllergies());
+                        tranpatient.setBloodGroup(patient.getBloodGroup());
+                        tranpatient.setDoctor(null);
+                        tranpatient.setIsDischarged(false);
+
+                        Location location = patient.getLocation();
+                        location.setCounter(location.getCounter() - 1);
+
+                        tranpatient.setLocation(null);
+                        tranpatient.setMedList(patient.getMedList());
+                        tranpatient.setPatientName(patient.getPatientName());
+                        this.enterprise.getPatientDirectory().getPatientList().remove(patient);
+                        transfer.setPatient(tranpatient);
+
+                        for (Network networkcombo : ecosystem.getNetworkList()) {
+                            for (Enterprise enterprisecombo : networkcombo.getEnterpriseDirectory().getEnterpriseList()) {
+                                if (enterprisecombo.getEnterpriseType() == Enterprise.EnterpriseType.Hospital
+                                        && enterprisecombo.getName().equals(transferHospital.getSelectedItem())) {
+                                    transfer.setEnterprise(enterprisecombo);
+                                    break;
+                                }
+                            }
+                        }
+                        transfer.setSenderEnterprise(this.enterprise);
+                        transfer.setStatus("0");
+                        transfer.setTime(LocalDateTime.now());
+                        enterprise.getWorkQueue().getWorkRequestList().add(transfer);
+                        userAccount.getWorkQueue().getWorkRequestList().add(transfer);
+                        JOptionPane.showMessageDialog(userProcessContainer, "Patient transfer Requested");
+                        populateTranReq();
+                        populateTable();
+                        return;
+                    }
+                }
+            }
+
+        }
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void transferHospitalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transferHospitalActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_transferHospitalActionPerformed
+
+    public void populatebloodReq() {
+        logger.log(Level.INFO, "populatebloodReq --ApppointmentJPanel");
+
+        DefaultTableModel model = (DefaultTableModel) jTable2.getModel();
+        model.setRowCount(0);
+        for (WorkRequest req : userAccount.getWorkQueue().getWorkRequestList()) {
+            if (req.getClass().getName().contains("BloodrequestToBBfromHospital")) {
+                Object[] row = new Object[4];
+                row[0] = ((BloodrequestToBBfromHospital) req).getPatient();
+                row[1] = ((BloodrequestToBBfromHospital) req).getPatient().getBloodGroup();
+                row[2] = ((BloodrequestToBBfromHospital) req).getReqUnits();
+                if (req.getStatus().equals("0")) {
+                    row[3] = "Requested";
+                } else if (req.getStatus().equals("1")) {
+                    row[3] = "In Progress";
+                } else if (req.getStatus().equals("2")) {
+                    row[3] = "Decline";
+                } else if (req.getStatus().equals("3")) {
+                    row[3] = "Completed";
+                }
+                model.addRow(row);
+
+            }
+        }
+    }
+
+    public void populateTranReq() {
+        logger.log(Level.INFO, "populateTranReq --ApppointmentJPanel");
+
+        DefaultTableModel model = (DefaultTableModel) patientJTable1.getModel();
+        model.setRowCount(0);
+
+        for (WorkRequest req : userAccount.getWorkQueue().getWorkRequestList()) {
+            if (req.getClass().getName().contains("TransferRequest")) {
+                Object[] row = new Object[3];
+                row[0] = ((TransferRequest) req).getPatient();
+
+                if (req.getStatus().equals("0")) {
+                    row[1] = "Requested";
+                } else if (req.getStatus().equals("1")) {
+                    row[1] = "In Progress";
+                } else if (req.getStatus().equals("3")) {
+                    row[1] = "Ambulance";
+                } else if (req.getStatus().equals("4")) {
+                    row[1] = "Transferred";
+                }
+                model.addRow(row);
+            }
+        }
+    }
+
+    public void populateDischargeReq() {
+        logger.log(Level.INFO, "populateDischargeReq --ApppointmentJPanel");
+
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+        for (WorkRequest req : userAccount.getWorkQueue().getWorkRequestList()) {
+            if (req.getClass().getName().contains("DischargeReqtoNurse")) {
+                Object[] row = new Object[2];
+                row[0] = ((DischargeReqtoNurse) req).getPatientname();
+                if (req.getStatus().equals("0")) {
+                    row[1] = "In process with nurse";
+                } else if (req.getStatus().equals("1")) {
+                    row[1] = "Discharged";
+                }
+                model.addRow(row);
+            }
+
+        }
+    }
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> bloodBanks;
+    private javax.swing.JButton btnAllergy;
+    private javax.swing.JButton btnBack;
+    private javax.swing.JButton btnPrescribe;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTable jTable2;
+    private javax.swing.JTable patientJTable;
+    private javax.swing.JTable patientJTable1;
+    private javax.swing.JLayeredPane sendToDoctorPanel3;
+    private javax.swing.JLayeredPane sendToDoctorPanel5;
+    private javax.swing.JLayeredPane sendToDoctorPanel6;
+    private javax.swing.JLayeredPane sendToDoctorPanel7;
+    private javax.swing.JComboBox<String> transferHospital;
+    // End of variables declaration//GEN-END:variables
+}
